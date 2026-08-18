@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Werkheft — Gewohnheiten, Lernen, Bücher</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF2ED;
+    --paper-dark:#E4EAE3;
+    --grid:#C6D5CB;
+    --ink:#1B2A22;
+    --muted:#5C6B62;
+    --copper:#C1622D;
+    --copper-dark:#9C4B1F;
+    --teal:#2E6E62;
+    --amber:#B4842C;
+    --danger:#A83232;
+    --line: 1px solid var(--grid);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+      var(--paper);
+    background-size: 28px 28px, 28px 28px, auto;
+    color:var(--ink);
+    font-family:'Source Serif 4', Georgia, serif;
+    min-height:100vh;
+  }
+  .mono{ font-family:'JetBrains Mono', monospace; }
+
+  header{
+    max-width:1080px;
+    margin:0 auto;
+    padding:44px 24px 24px;
+    border-bottom:2px solid var(--ink);
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--copper-dark);
+    margin:0 0 6px;
+  }
+  h1{
+    font-size:clamp(32px,5vw,48px);
+    margin:0 0 6px;
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
+  .sub{
+    color:var(--muted);
+    font-size:15px;
+    margin:0;
+  }
+  .statline{
+    display:flex;
+    gap:28px;
+    flex-wrap:wrap;
+    margin-top:18px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--muted);
+  }
+  .statline b{ color:var(--ink); font-size:15px; display:block; }
+
+  main{
+    max-width:1080px;
+    margin:0 auto;
+    padding:32px 24px 80px;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:28px;
+  }
+  @media(min-width:860px){
+    main{ grid-template-columns: 1.15fr 1fr; }
+    section.books{ grid-column:1 / -1; }
+  }
+
+  section{
+    background:rgba(255,255,255,.55);
+    border:1px solid var(--ink);
+    padding:22px 22px 24px;
+    position:relative;
+  }
+  section::before{
+    content: attr(data-index);
+    position:absolute;
+    top:-13px;
+    left:18px;
+    background:var(--paper);
+    padding:0 8px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:.14em;
+    color:var(--copper-dark);
+    font-weight:600;
+  }
+  h2{
+    margin:8px 0 4px;
+    font-size:20px;
+    font-weight:600;
+  }
+  .hint{ color:var(--muted); font-size:13px; margin:0 0 16px; }
+
+  form.inline{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+    padding-bottom:18px;
+    border-bottom:1px dashed var(--grid);
+  }
+  input, select{
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    padding:8px 10px;
+    border:1px solid var(--grid);
+    background:#fff;
+    color:var(--ink);
+    outline:none;
+  }
+  input:focus, select:focus{ border-color:var(--copper); }
+  input[type=text]{ flex:1; min-width:120px; }
+  input[type=number]{ width:90px; }
+  button{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    padding:9px 14px;
+    border:1px solid var(--ink);
+    background:var(--ink);
+    color:var(--paper);
+    cursor:pointer;
+  }
+  button:hover{ background:var(--copper-dark); border-color:var(--copper-dark); }
+  button.ghost{
+    background:transparent; color:var(--muted); border-color:var(--grid);
+    text-transform:none; letter-spacing:0; padding:5px 9px; font-size:12px;
+  }
+  button.ghost:hover{ color:var(--danger); border-color:var(--danger); background:transparent; }
+
+  .empty{ color:var(--muted); font-size:13px; font-style:italic; padding:8px 0; }
+
+  /* --- Habits --- */
+  .habit{
+    padding:14px 0;
+    border-bottom:1px solid var(--grid);
+  }
+  .habit:last-child{ border-bottom:none; }
+  .habit-top{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;
+  }
+  .habit-name{ font-weight:600; font-size:15px; }
+  .streak-badge{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--copper-dark);
+    white-space:nowrap;
+  }
+  .trace{ display:flex; align-items:center; gap:0; }
+  .node-wrap{ display:flex; align-items:center; }
+  .node{
+    width:14px; height:14px; border-radius:50%;
+    border:2px solid var(--grid);
+    background:#fff;
+    flex:none;
+    cursor:default;
+  }
+  .node.done{ background:var(--copper); border-color:var(--copper-dark); }
+  .node.today{ box-shadow:0 0 0 3px rgba(193,98,45,.18); cursor:pointer; }
+  .trace-line{ width:14px; height:2px; background:var(--grid); flex:none; }
+  .trace-line.on{ background:var(--copper); }
+  .habit-actions{ display:flex; gap:8px; margin-top:10px; }
+
+  /* --- Study --- */
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--muted); text-align:left; padding:6px 8px; border-bottom:1px solid var(--ink);
+  }
+  td{ padding:8px; border-bottom:1px solid var(--grid); vertical-align:top; }
+  tr:last-child td{ border-bottom:none; }
+  .num{ font-family:'JetBrains Mono', monospace; text-align:right; }
+
+  /* --- Books --- */
+  .book-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
+  .book{ border:1px solid var(--grid); padding:14px; background:#fff; }
+  .book-title{ font-weight:600; font-size:14px; margin:0 0 2px; }
+  .book-author{ color:var(--muted); font-size:12px; margin:0 0 10px; }
+  .ruler{
+    height:10px; background:var(--paper-dark); border:1px solid var(--grid);
+    position:relative; margin-bottom:6px;
+  }
+  .ruler-fill{ height:100%; background:var(--teal); }
+  .ruler-fill.done{ background:var(--amber); }
+  .book-meta{ display:flex; justify-content:space-between; align-items:center; font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); }
+  .page-input{ display:flex; gap:6px; margin-top:10px; }
+  .page-input input{ width:70px; }
+  .badge-done{ color:var(--amber); font-weight:600; }
+
+  footer{
+    max-width:1080px; margin:0 auto; padding:0 24px 40px;
+    color:var(--muted); font-size:12px; font-family:'JetBrains Mono', monospace;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">// Werkheft</p>
+  <h1>Werkheft</h1>
+  <p class="sub">Ein Logbuch für Gewohnheiten, Lernzeit und Bücher.</p>
+  <div class="statline">
+    <div><b id="statHabits">0</b>aktive Gewohnheiten</div>
+    <div><b id="statStudy">0 min</b>Lernzeit diese Woche</div>
+    <div><b id="statBooks">0</b>Bücher in Arbeit</div>
+    <div><b id="statDate" class="mono"></b>heute</div>
+  </div>
+</header>
+
+<main>
+
+  <section class="habits" data-index="01 — Gewohnheiten">
+    <h2>Gewohnheiten</h2>
+    <p class="hint">Trace der letzten 14 Tage. Klick auf den heutigen Knoten, um abzuhaken.</p>
+    <form class="inline" id="habitForm">
+      <input type="text" id="habitName" placeholder="z. B. Vokabeln lernen" required>
+      <button type="submit">+ Anlegen</button>
+    </form>
+    <div id="habitList"></div>
+  </section>
+
+  <section class="study" data-index="02 — Lernen">
+    <h2>Lernen</h2>
+    <p class="hint">Kurze Sessions protokollieren, Fach + Minuten reichen.</p>
+    <form class="inline" id="studyForm">
+      <input type="text" id="studySubject" placeholder="Fach" required>
+      <input type="number" id="studyMinutes" placeholder="Min." min="1" required>
+      <button type="submit">+ Eintragen</button>
+    </form>
+    <table>
+      <thead><tr><th>Datum</th><th>Fach</th><th class="num">Minuten</th><th></th></tr></thead>
+      <tbody id="studyList"></tbody>
+    </table>
+    <div id="studyEmpty" class="empty" style="display:none;">Noch keine Einträge.</div>
+  </section>
+
+  <section class="books" data-index="03 — Bücher">
+    <h2>Bücher</h2>
+    <p class="hint">Fortschritt über die Seitenzahl tracken.</p>
+    <form class="inline" id="bookForm">
+      <input type="text" id="bookTitle" placeholder="Titel" required>
+      <input type="text" id="bookAuthor" placeholder="Autor:in">
+      <input type="number" id="bookPages" placeholder="Seiten gesamt" min="1" required>
+      <button type="submit">+ Hinzufügen</button>
+    </form>
+    <div class="book-grid" id="bookList"></div>
+    <div id="bookEmpty" class="empty" style="display:none;">Noch keine Bücher erfasst.</div>
+  </section>
+
+</main>
+
+<footer>Daten werden lokal im Browser gespeichert (localStorage). Kein Server, kein Tracking.</footer>
+
+<script>
+// ---------- Utilities ----------
+const $ = (sel, el=document) => el.querySelector(sel);
+const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+const todayISO = () => new Date().toISOString().slice(0,10);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+
+function load(key, fallback){
+  try{
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  }catch(e){ return fallback; }
+}
+function save(key, val){
+  try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+}
+
+let habits = load('werkheft_habits', []);
+let studySessions = load('werkheft_study', []);
+let books = load('werkheft_books', []);
+
+// ---------- Habits ----------
+function last14Dates(){
+  const arr = [];
+  for(let i=13;i>=0;i--){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    arr.push(d.toISOString().slice(0,10));
+  }
+  return arr;
+}
+
+function computeStreak(habit){
+  let streak = 0;
+  let d = new Date();
+  // if today not done yet, streak counts from yesterday backward
+  const set = new Set(habit.completions);
+  let cursor = new Date();
+  if(!set.has(todayISO())) cursor.setDate(cursor.getDate()-1);
+  while(set.has(cursor.toISOString().slice(0,10))){
+    streak++;
+    cursor.setDate(cursor.getDate()-1);
+  }
+  return streak;
+}
+
+function renderHabits(){
+  const list = $('#habitList');
+  list.innerHTML = '';
+  if(habits.length === 0){
+    list.innerHTML = '<div class="empty">Noch keine Gewohnheit angelegt.</div>';
+  }
+  const dates = last14Dates();
+  const today = todayISO();
+
+  habits.forEach(h=>{
+    const streak = computeStreak(h);
+    const doneSet = new Set(h.completions);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'habit';
+
+    const top = document.createElement('div');
+    top.className = 'habit-top';
+    top.innerHTML = `<span class="habit-name">${escapeHtml(h.name)}</span>
+      <span class="streak-badge">${streak > 0 ? streak + ' Tage Streak' : 'kein Streak'}</span>`;
+    wrap.appendChild(top);
+
+    const trace = document.createElement('div');
+    trace.className = 'trace';
+    dates.forEach((d, idx)=>{
+      const done = doneSet.has(d);
+      const node = document.createElement('div');
+      node.className = 'node' + (done ? ' done' : '') + (d === today ? ' today' : '');
+      node.title = d;
+      if(d === today){
+        node.addEventListener('click', ()=> toggleToday(h.id));
+      }
+      trace.appendChild(node);
+      if(idx < dates.length - 1){
+        const nextDone = doneSet.has(dates[idx+1]);
+        const line = document.createElement('div');
+        line.className = 'trace-line' + (done && nextDone ? ' on' : '');
+        trace.appendChild(line);
+      }
+    });
+    wrap.appendChild(trace);
+
+    const actions = document.createElement('div');
+    actions.className = 'habit-actions';
+    actions.innerHTML = `<button class="ghost" data-remove="${h.id}">Entfernen</button>`;
+    wrap.appendChild(actions);
+
+    list.appendChild(wrap);
+  });
+
+  $$('[data-remove]', list).forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      habits = habits.filter(h => h.id !== btn.dataset.remove);
+      save('werkheft_habits', habits);
+      renderHabits(); renderStats();
+    });
+  });
+
+  $('#statHabits').textContent = habits.length;
+}
+
+function toggleToday(id){
+  const h = habits.find(x=>x.id===id);
+  if(!h) return;
+  const t = todayISO();
+  if(h.completions.includes(t)){
+    h.completions = h.completions.filter(d=>d!==t);
+  }else{
+    h.completions.push(t);
+  }
+  save('werkheft_habits', habits);
+  renderHabits(); renderStats();
+}
+
+$('#habitForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const name = $('#habitName').value.trim();
+  if(!name) return;
+  habits.push({ id: uid(), name, completions: [] });
+  save('werkheft_habits', habits);
+  $('#habitName').value = '';
+  renderHabits(); renderStats();
+});
+
+// ---------- Study ----------
+function renderStudy(){
+  const tbody = $('#studyList');
+  tbody.innerHTML = '';
+  const sorted = [...studySessions].sort((a,b)=> b.date.localeCompare(a.date));
+  $('#studyEmpty').style.display = sorted.length ? 'none' : 'block';
+
+  sorted.forEach(s=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="mono">${s.date}</td>
+      <td>${escapeHtml(s.subject)}</td>
+      <td class="num mono">${s.minutes}</td>
+      <td><button class="ghost" data-remove-study="${s.id}">✕</button></td>`;
+    tbody.appendChild(tr);
+  });
+
+  $$('[data-remove-study]', tbody).forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      studySessions = studySessions.filter(s=>s.id !== btn.dataset.removeStudy);
+      save('werkheft_study', studySessions);
+      renderStudy(); renderStats();
+    });
+  });
+}
+
+$('#studyForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const subject = $('#studySubject').value.trim();
+  const minutes = parseInt($('#studyMinutes').value, 10);
+  if(!subject || !minutes) return;
+  studySessions.push({ id: uid(), subject, minutes, date: todayISO() });
+  save('werkheft_study', studySessions);
+  $('#studySubject').value = ''; $('#studyMinutes').value = '';
+  renderStudy(); renderStats();
+});
+
+// ---------- Books ----------
+function renderBooks(){
+  const grid = $('#bookList');
+  grid.innerHTML = '';
+  $('#bookEmpty').style.display = books.length ? 'none' : 'block';
+
+  books.forEach(b=>{
+    const pct = Math.min(100, Math.round((b.currentPage / b.totalPages) * 100));
+    const finished = b.currentPage >= b.totalPages;
+    const card = document.createElement('div');
+    card.className = 'book';
+    card.innerHTML = `
+      <p class="book-title">${escapeHtml(b.title)}</p>
+      <p class="book-author">${escapeHtml(b.author || '—')}</p>
+      <div class="ruler"><div class="ruler-fill${finished ? ' done' : ''}" style="width:${pct}%"></div></div>
+      <div class="book-meta">
+        <span>${finished ? '<span class="badge-done">durchgelesen</span>' : pct + '%'}</span>
+        <span>${b.currentPage} / ${b.totalPages}</span>
+      </div>
+      <div class="page-input">
+        <input type="number" min="0" max="${b.totalPages}" value="${b.currentPage}" data-page-for="${b.id}">
+        <button class="ghost" data-remove-book="${b.id}">Entfernen</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  $$('[data-page-for]', grid).forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      const b = books.find(x=>x.id === inp.dataset.pageFor);
+      if(!b) return;
+      let v = parseInt(inp.value, 10) || 0;
+      v = Math.max(0, Math.min(v, b.totalPages));
+      b.currentPage = v;
+      save('werkheft_books', books);
+      renderBooks(); renderStats();
+    });
+  });
+  $$('[data-remove-book]', grid).forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      books = books.filter(b=>b.id !== btn.dataset.removeBook);
+      save('werkheft_books', books);
+      renderBooks(); renderStats();
+    });
+  });
+}
+
+$('#bookForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const title = $('#bookTitle').value.trim();
+  const author = $('#bookAuthor').value.trim();
+  const totalPages = parseInt($('#bookPages').value, 10);
+  if(!title || !totalPages) return;
+  books.push({ id: uid(), title, author, totalPages, currentPage: 0 });
+  save('werkheft_books', books);
+  $('#bookTitle').value = ''; $('#bookAuthor').value = ''; $('#bookPages').value = '';
+  renderBooks(); renderStats();
+});
+
+// ---------- Stats ----------
+function renderStats(){
+  $('#statHabits').textContent = habits.length;
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate()-7);
+  const weekAgoISO = weekAgo.toISOString().slice(0,10);
+  const weekMinutes = studySessions
+    .filter(s => s.date >= weekAgoISO)
+    .reduce((sum,s)=> sum + s.minutes, 0);
+  $('#statStudy').textContent = weekMinutes + ' min';
+  $('#statBooks').textContent = books.filter(b => b.currentPage < b.totalPages).length;
+  $('#statDate').textContent = todayISO();
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str ?? '';
+  return div.innerHTML;
+}
+
+// ---------- Init ----------
+renderHabits();
+renderStudy();
+renderBooks();
+renderStats();
+</script>
+</body>
+</html>
